@@ -2,9 +2,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
-
+const cors = require('cors');
 
 const app = express();
+
+
+
+// Use CORS middleware
+app.use(cors());
 app.use(bodyParser.json());
 
 const userRouter=require("./routes/user")
@@ -13,7 +18,6 @@ const orderRouter=require("./routes/order")
 const cartRouter=require("./routes/cart")
 const customerAddressRouter=require("./routes/customerAddress");
 const OrdercartRouter=require("./routes/orderCart");
-const { Ordercart } = require('./model/Ordercart');
 
 // Connect to MongoDB
 async function main() {

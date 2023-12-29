@@ -5,7 +5,10 @@ const cartSchema = new Schema({
   uid: { type: Schema.Types.ObjectId, required: true, ref: 'User' }, 
   products: [
     {
-      pid: { type: Schema.Types.ObjectId, required: true, ref: 'Product' }, 
+      pid: { type: Schema.Types.ObjectId, required: true, ref: 'Product' },
+      ptitle: { type: String },
+      pthumbnail: { type: String },
+      pprice: { type: Number },
       quantity: { type: Number, required: true, min: [1, 'Quantity must be at least 1'] },
     }
   ],

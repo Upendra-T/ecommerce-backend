@@ -2,18 +2,13 @@
 const nodemailer = require("nodemailer");
 const model= require("../model/User");
 const User=model.User;
-const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 
-const generateRandomString = (length) => {
-  return crypto.randomBytes(Math.ceil(length / 2))
-    .toString('hex') 
-    .slice(0, length); 
-};
 
-const secretKey = generateRandomString(32); 
+
+const secretKey = "f811b7889e175938b2906e3d68cc0363"; 
 console.log('Generated Secret Key:', secretKey);
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
@@ -59,13 +54,14 @@ exports.verifyUser = async(req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
-    
+        const uid=user._id;
+        const usertype=user.userType;
         if (!user || !await bcrypt.compare(password, user.password)) {
           return res.status(401).json({ error: 'Invalid credentials' });
         }
     
         const token = jwt.sign({ userId: user._id }, secretKey, { expiresIn: '1h' });
-        res.json({ token });
+        res.json({ token,uid,usertype });
       } 
       catch (error) {
         console.error('User verify error:', error);
@@ -85,7 +81,7 @@ exports.forgotMailUser = async(req, res) => {
         const resetToken = jwt.sign({ userId: user._id }, secretKey, { expiresIn: '1h' });
         user.resetToken = resetToken;
         await user.save();
-        const resetLink = `http://localhost:8080/reset-password/${resetToken}`;
+        const resetLink = `http://localhost:3000/reset-password/${user._id}/${resetToken}`;
         const mailOptions = {
           to: user.email,
           subject: 'Reset your password',
@@ -107,29 +103,29 @@ exports.forgotMailUser = async(req, res) => {
         res.status(400).json({ error: error.message });
       }
 };
+exports.updateUserPassword = async (req, res) => {
+  console.log("rpwd"+req.body);
 
-exports.updateUserPassword= async(req,res)=>{
-    const { token } = req.params;
+  const { token } = req.body;
   const { password } = req.body;
-
+  console.log("password in reset"+password)
   try {
-
     const decoded = jwt.verify(token, secretKey);
     const user = await User.findById(decoded.userId);
-
+    console.log("password in reset usermail"+user.email);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-
-    user.password = await bcrypt.hash(password, 10);
+    
+    user.password = password;
+    console.log("passwordencrypt in reset"+ user.password)
     await user.save();
     res.json({ message: 'Password successfully reset' });
-  } 
-  catch (error) {
+  } catch (error) {
     console.error('Token verification error:', error);
     res.status(400).json({ error: 'Invalid or expired token' });
   }
-}
+};
 exports.deleteUser = async(req, res) => {
   console.log(req.params.id);
   const users=await user.deleteOne({"email":req.params.id});

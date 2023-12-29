@@ -7,7 +7,7 @@ router
 .post("/register",userController.createUser)
 .post("/login",userController.verifyUser)
 .post("/forgot-password",userController.forgotMailUser )
-.post("reset-password/:token",userController.updateUserPassword)
+.post("/reset-password",userController.updateUserPassword)
 .delete("/:email", userController.deleteUser);
 
 exports.router=router;
