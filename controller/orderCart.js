@@ -8,11 +8,9 @@ const { User } = require('../model/User');
 
 exports.createCartOrder = async (req, res) => {
   try {
-    const { uid } = req.body;
+    const { uid,address } = req.body;
     const token = req.headers.authorization.split(' ')[1];
-
     const decoded = jwt.verify(token, secretKey);
-    console.log("cartbuy"+(decoded.userId==uid));
     if (decoded.userId !== uid) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -43,9 +41,11 @@ exports.createCartOrder = async (req, res) => {
         cid: cart._id,
         pid: cartProduct.pid,
         uid,
+        ptitle:cartProduct.ptitle,
+        pthumbnail:cartProduct.pthumbnail,
         quantity: cartProduct.quantity,
         totalPrice,
-        address: user.address,
+        address,
       });
       await newOrder.save();
       product.stock -= cartProduct.quantity;

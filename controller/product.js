@@ -39,6 +39,27 @@ exports.createProduct = async (req, res) => {
     res.status(400).json({ error: 'Error saving product' });
   }
 };
+exports.createProducts = async (req, res) => {
+  try {
+    // Ensure that req.body is an array
+    if (!Array.isArray(req.body)) {
+      return res.status(400).json({ error: "Request body should be an array of products" });
+    }
+
+    const savedProducts = [];
+
+    for (const productData of req.body) {
+      const product = new Product(productData);
+      const savedProduct = await product.save();
+      savedProducts.push(savedProduct);
+    }
+
+    res.status(201).json(savedProducts);
+  } catch (error) {
+    console.error("Error creating products:", error);
+    res.status(400).json({ error: "Error saving products" });
+  }
+};
 
 exports.getAllProducts = async (req, res) => {
   const products = await Product.find();

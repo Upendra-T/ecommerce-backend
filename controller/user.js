@@ -4,47 +4,50 @@ const model= require("../model/User");
 const User=model.User;
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
+const CustomerAddress = require('../model/customerAddress');
 
 
 
 const secretKey = "f811b7889e175938b2906e3d68cc0363"; 
-console.log('Generated Secret Key:', secretKey);
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
     secure: false,
     auth: {
-      user: 'Upendra19920000@gmail.com',
-      pass: 'kfnx pwez tceu txks',
+      user: '#add your email here',
+      pass: '#add your application password here',
     },
   });
-exports.createUser = async(req, res) => {
+
+  exports.createUser = async (req, res) => {
     try {
-        const { email, password, confirmPassword,userType,address } = req.body;
-        if (password !== confirmPassword) {
-          return res.status(400).json({ error: 'Passwords do not match' });
-        }
-    
-        const existingUser = await User.findOne({ email });
-    
-        if (existingUser) {
-          return res.status(400).json({ error: 'Email already registered' });
-        }
-    
-        const user = new User({ email, password,userType,address });
-        user.verificationToken = jwt.sign({ email: user.email }, secretKey, { expiresIn: '1d' });
-        const savedUser = await user.save();
-
-    
-        res.json({ user: { email: savedUser.email }, message: 'User registered' });
-      } catch (error) {
-        
-        console.error('User reg error:', error);
-        res.status(400).json({ error: error.message });
+      const { email, password, confirmPassword, userType, address } = req.body;
+      if (password !== confirmPassword) {
+        return res.status(400).json({ error: 'Passwords do not match' });
       }
- };
-
+  
+      const existingUser = await User.findOne({ email });
+  
+      if (existingUser) {
+        return res.status(400).json({ error: 'Email already registered' });
+      }
+  
+      const user = new User({ email, password, userType, address });
+      user.verificationToken = jwt.sign({ email: user.email }, secretKey, { expiresIn: '1d' });
+      const savedUser = await user.save();
+  
+      const newAddress = new CustomerAddress({
+        uid: savedUser._id,
+        address,
+      });
+      const savedAddress = await newAddress.save();
+  
+      res.json({ user: { email: savedUser.email }, address: savedAddress, message: 'User registered with address' });
+    } catch (error) {
+      console.error('User reg error:', error);
+      res.status(400).json({ error: error.message });
+    }
+  };
 exports.getUser = async(req, res) => {
   const users=await User.findOne({"email":req.params.email});
   res.json(users);

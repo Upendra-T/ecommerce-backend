@@ -1,12 +1,13 @@
 const model= require("../model/Order");
 const Order=model.Order;
 const { Product } = require('../model/Product');
+const { Ordercart } = require('../model/Ordercart');
 const { User } = require('../model/User');
 const jwt = require('jsonwebtoken');
 const secretKey = "f811b7889e175938b2906e3d68cc0363"; 
 exports.createOrder = async (req, res) => {
   try {
-    const { pid, uid, quantity } = req.body;
+    const { pid, uid, quantity,address } = req.body;
     const token = req.headers.authorization.split(' ')[1];
     const decoded = jwt.verify(token, secretKey);
     if (decoded.userId !== uid) {
@@ -34,7 +35,7 @@ exports.createOrder = async (req, res) => {
       pthumbnail: product.thumbnail, 
       quantity,
       totalPrice,
-      address: user.address,
+      address,
       orderDate: new Date(),
     });
 
@@ -53,13 +54,18 @@ exports.fetchOrdersByUser = async (req, res) => {
     const { uid } = req.query;
     const token = req.headers.authorization.split(' ')[1];
     const decoded = jwt.verify(token, secretKey);
+
     if (decoded.userId !== uid) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const orders = await Order.find({ uid });
-    res.json({ orders });
-  }
-   catch (error) {
+
+    const ordersFromOrderModel = await Order.find({ uid });
+    const ordersFromOrdercartModel = await Ordercart.find({ uid });
+
+    const allOrders = [...ordersFromOrderModel, ...ordersFromOrdercartModel];
+
+    res.json({ orders: allOrders });
+  } catch (error) {
     console.error('Fetch orders by user error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }

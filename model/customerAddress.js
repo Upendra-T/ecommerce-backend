@@ -4,8 +4,6 @@ const { Schema } = mongoose;
 const customerAddressSchema = new Schema({
   uid: { type: Schema.Types.ObjectId, required: true, ref: 'User' }, 
   address: { type: String, required: true },
-  postalCode: { type: Number, required: true },
-  country: { type: String, required: true },
 });
 
 const customerAddress = mongoose.model('Address', customerAddressSchema);
